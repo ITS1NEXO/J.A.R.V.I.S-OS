@@ -7,7 +7,6 @@ jobs:
   build-release-apk:
     runs-on: ubuntu-latest
     if: endsWith(github.ref, '-alpha') || endsWith(github.ref, '-beta') || endsWith(github.ref, '-rc') || endsWith(github.ref, '-stable')
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v7
         with:
@@ -20,15 +19,20 @@ jobs:
         with:
           cache-encryption-key: Da25KUVSE5jbGds2zXmfXw==
       - name: Write sign info
-        if: github.repository_owner == 'LawnchairLauncher'
+        if: ${{ secrets.KEYSTORE != '' }}
+        env:
+          KEYSTORE: ${{ secrets.KEYSTORE }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          if [ ! -z "${{ secrets.KEYSTORE }}" ]; then
-            echo storePassword='${{ secrets.KEYSTORE_PASSWORD }}' >> keystore.properties
-            echo keyAlias='${{ secrets.KEY_ALIAS }}' >> keystore.properties
-            echo keyPassword='${{ secrets.KEY_PASSWORD }}' >> keystore.properties
-            echo storeFile='${{ github.workspace }}/key.jks' >> keystore.properties
-            echo ${{ secrets.KEYSTORE }} | base64 --decode > ${{ github.workspace }}/key.jks
-          fi
+          printf '%s' "$KEYSTORE" | base64 --decode > "${{ github.workspace }}/key.jks"
+          {
+            printf 'storePassword=%s\\n' "$KEYSTORE_PASSWORD"
+            printf 'keyAlias=%s\\n' "$KEY_ALIAS"
+            printf 'keyPassword=%s\\n' "$KEY_PASSWORD"
+            printf 'storeFile=%s\\n' "${{ github.workspace }}/key.jks"
+          } > keystore.properties
       - name: Build release APK
         run: ./gradlew assembleLawnWithQuickstepGithubRelease bundleLawnWithQuickstepPlayRelease
       - name: Upload artifact
