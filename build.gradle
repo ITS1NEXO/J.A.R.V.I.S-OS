@@ -216,6 +216,9 @@ android {
             storePassword keystoreProperties['storePassword']
         }
     } catch (Exception ignored) {
+        if (gradle.startParameter.taskNames.any { it.toLowerCase().contains("release") }) {
+            throw new GradleException("Release builds require the permanent NIX OS signing keystore. Configure GitHub Actions secrets before building a release APK.")
+        }
         releaseSigning = signingConfigs.debug
     }
 
