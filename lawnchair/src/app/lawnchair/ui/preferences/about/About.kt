@@ -201,26 +201,6 @@ fun About(
             }
         }
         preferenceGroupItems(
-            items = uiState.coreTeam,
-            isFirstChild = false,
-            heading = { stringResource(id = R.string.product) },
-            key = { _, it -> it.name },
-        ) { _, it ->
-            ContributorRow(
-                member = it,
-            )
-        }
-        preferenceGroupItems(
-            items = uiState.supportAndPr,
-            isFirstChild = false,
-            heading = { stringResource(id = R.string.support_and_pr) },
-            key = { _, it -> it.name },
-        ) { _, it ->
-            ContributorRow(
-                member = it,
-            )
-        }
-        preferenceGroupItems(
             items = uiState.bottomLinks,
             isFirstChild = false,
             heading = { stringResource(id = R.string.community) },
@@ -231,6 +211,23 @@ fun About(
                 label = stringResource(id = it.labelResId),
                 url = it.url,
             )
+        }
+        item {
+            PreferenceGroupItem(
+                cutTop = false,
+                cutBottom = true,
+            ) {
+                ClickablePreference(
+                    label = "Lawnchair — Open-source base",
+                    onClick = {
+                        val webpage = "https://github.com/LawnchairLauncher/Lawnchair".toUri()
+                        val intent = Intent(Intent.ACTION_VIEW, webpage)
+                        if (intent.resolveActivity(context.packageManager) != null) {
+                            context.startActivity(intent)
+                        }
+                    },
+                )
+            }
         }
         item {
             PreferenceGroupHeading(
